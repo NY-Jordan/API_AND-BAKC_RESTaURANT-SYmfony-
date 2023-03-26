@@ -2,30 +2,50 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
 use App\Repository\UserRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use App\State\UserPasswordHasher;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
+#[ApiResource(
+    normalizationContext: ['groups' => ["Dishes:read:collection"]],
+    operations: [
+        new Get(
+            normalizationContext: ['groups' => ["Dishes:read:item"]]
+        ),
+        new GetCollection(),
+        new Post(processor: UserPasswordHasher::class)
+    ]
+    )    
+]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-class User
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $name = null;
-
-    #[ORM\Column]
-    private ?int $phone = null;
-
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 180, unique: true)]
     private ?string $email = null;
 
     #[ORM\Column]
-    private ?bool $status = null;
+    private array $roles = [];
+
+    /**
+     * @var string The hashed password
+     */
+    #[ORM\Column]
+    private ?string $password = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $phone = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $created_at = null;
@@ -33,41 +53,12 @@ class User
     #[ORM\Column]
     private ?\DateTimeImmutable $updated_at = null;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Command::class)]
-    private Collection $commands;
-
-    public function __construct()
-    {
-        $this->commands = new ArrayCollection();
-    }
+    #[ORM\Column(length: 255)]
+    private ?string $Username = null;
 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
-
-    public function setName(string $name): self
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    public function getPhone(): ?int
-    {
-        return $this->phone;
-    }
-
-    public function setPhone(int $phone): self
-    {
-        $this->phone = $phone;
-
-        return $this;
     }
 
     public function getEmail(): ?string
@@ -82,14 +73,67 @@ class User
         return $this;
     }
 
-    public function isStatus(): ?bool
+    /**
+     * A visual identifier that represents this user.
+     *
+     * @see UserInterface
+     */
+    public function getUserIdentifier(): string
     {
-        return $this->status;
+        return (string) $this->email;
     }
 
-    public function setStatus(bool $status): self
+    /**
+     * @see UserInterface
+     */
+    public function getRoles(): array
     {
-        $this->status = $status;
+        $roles = $this->roles;
+        // guarantee every user at least has ROLE_USER
+        $roles[] = 'ROLE_USER';
+
+        return array_unique($roles);
+    }
+
+    public function setRoles(array $roles): self
+    {
+        $this->roles = $roles;
+
+        return $this;
+    }
+
+    /**
+     * @see PasswordAuthenticatedUserInterface
+     */
+    public function getPassword(): string
+    {
+        return $this->password;
+    }
+
+    public function setPassword(string $password): self
+    {
+        $this->password = $password;
+
+        return $this;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function eraseCredentials()
+    {
+        // If you store any temporary, sensitive data on the user, clear it here
+        // $this->plainPassword = null;
+    }
+
+    public function getPhone(): ?string
+    {
+        return $this->phone;
+    }
+
+    public function setPhone(string $phone): self
+    {
+        $this->phone = $phone;
 
         return $this;
     }
@@ -118,38 +162,15 @@ class User
         return $this;
     }
 
-    /**
-     * @return Collection<int, Command>
-     */
-    public function getCommands(): Collection
+    public function getUsername(): ?string
     {
-        return $this->commands;
+        return $this->Username;
     }
 
-    public function addCommand(Command $command): self
+    public function setUsername(string $Username): self
     {
-        if (!$this->commands->contains($command)) {
-            $this->commands->add($command);
-            $command->setUser($this);
-        }
+        $this->Username = $Username;
 
         return $this;
-    }
-
-    public function removeCommand(Command $command): self
-    {
-        if ($this->commands->removeElement($command)) {
-            // set the owning side to null (unless already changed)
-            if ($command->getUser() === $this) {
-                $command->setUser(null);
-            }
-        }
-
-        return $this;
-    }
-
-    public function __toString()
-    {
-        return $this->name;
     }
 }

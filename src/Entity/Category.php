@@ -41,9 +41,13 @@ class Category
     #[ORM\OneToMany(mappedBy: 'category', targetEntity: Dishes::class)]
     private Collection $dishes;
 
+    #[ORM\OneToMany(mappedBy: 'categorie', targetEntity: Drinks::class)]
+    private Collection $drinks;
+
     public function __construct()
     {
         $this->dishes = new ArrayCollection();
+        $this->drinks = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -120,5 +124,35 @@ class Category
     public function __toString()
     {
         return $this->name;
+    }
+
+    /**
+     * @return Collection<int, Drinks>
+     */
+    public function getDrinks(): Collection
+    {
+        return $this->drinks;
+    }
+
+    public function addDrink(Drinks $drink): self
+    {
+        if (!$this->drinks->contains($drink)) {
+            $this->drinks->add($drink);
+            $drink->setCategorie($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDrink(Drinks $drink): self
+    {
+        if ($this->drinks->removeElement($drink)) {
+            // set the owning side to null (unless already changed)
+            if ($drink->getCategorie() === $this) {
+                $drink->setCategorie(null);
+            }
+        }
+
+        return $this;
     }
 }

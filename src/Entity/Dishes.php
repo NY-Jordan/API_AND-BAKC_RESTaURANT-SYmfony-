@@ -12,6 +12,7 @@ use Doctrine\DBAL\Types\Types;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use Doctrine\ORM\Mapping as ORM;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\TextFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ApiResource(
@@ -25,7 +26,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
     ),
     ApiFilter(DateFilter::class, properties: ['created_at']),
     
-    ]
+]
 #[ORM\Entity(repositoryClass: DishesRepository::class)]
 class Dishes
 {

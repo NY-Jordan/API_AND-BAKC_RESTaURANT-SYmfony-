@@ -6,6 +6,7 @@ use App\Entity\Category;
 use App\Entity\Command;
 use App\Entity\Commande;
 use App\Entity\Dishes;
+use App\Entity\Drinks;
 use App\Entity\Menu;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
@@ -32,7 +33,7 @@ class DashboardController extends AbstractDashboardController
     public function configureDashboard(): Dashboard
     {
         return Dashboard::new()
-            ->setTitle('Api Kwenti Test - Admin');
+            ->setTitle('Api Kutiwa Test - Admin');
     }
 
     public function configureMenuItems(): iterable
@@ -58,6 +59,12 @@ class DashboardController extends AbstractDashboardController
          yield MenuItem::subMenu('Action', "fas fa-bars")->setSubItems([
              MenuItem::linkToCrud('add Menu', 'fas fa-plus', Menu::class)->setAction(Crud::PAGE_NEW),
              MenuItem::linkToCrud('Show Menus', 'fas fa-eye', Menu::class)
+         ]);
+
+         yield MenuItem::section('Boissons', "fa-light fa-command");
+         yield MenuItem::subMenu('Action', "fas fa-bars")->setSubItems([
+             MenuItem::linkToCrud('add Beverage', 'fas fa-plus', Drinks::class)->setAction(Crud::PAGE_NEW),
+             MenuItem::linkToCrud('Show Beverage', 'fas fa-eye', Drinks::class)
          ]);
 
          yield MenuItem::section('Commande', "fa-light fa-command");
